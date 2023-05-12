@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins-deployment
+  labels:
+    app: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      name: jenkins-container
+      labels:
+        app: jenkins
+        role: master
+    spec:
+      containers:
+        - name: jenkins
+          image: jorgeacetozi/jenkins:2.60.3
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http-port
+            - containerPort: 50000
+              name: jnlp-port
+          volumeMounts:
+            - mountPath: /var/jenkins_home
+              name: jenkins-volume
+            - mountPath: /var/jenkins_home/.ssh
+              name: github-private-key-volume
+              readOnly: true
+      volumes:
+        - name: jenkins-volume
+          emptyDir: {}
+        - name: github-private-key-volume
+          secret:
+            secretName: github-private-key-secret
